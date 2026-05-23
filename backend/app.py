@@ -1,25 +1,20 @@
 from flask import Flask
-from flask_pymongo import PyMongo
+from flask_jwt_extended import JWTManager
+from flask_bcrypt import Bcrypt
 from dotenv import load_dotenv
 import os
 
 load_dotenv()
 
-print("MONGO_URI:", os.getenv('MONGO_URI'))
-
 app = Flask(__name__)
-app.config['MONGO_URI'] = os.getenv('MONGO_URI')
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+app.config['JWT_SECRET_KEY'] = os.getenv('SECRET_KEY')
 
-mongo = PyMongo(app)
+jwt = JWTManager(app)
+bcrypt = Bcrypt(app)
 
-@app.route('/api/hello')
-def hello():
-    try:
-        mongo.cx.admin.command('ping')
-        return {'message': 'MongoDB connected successfully!'}
-    except Exception as e:
-        return {'error': str(e)}, 500
+from routes import auth_bp
+app.register_blueprint(auth_bp)
 
 if __name__ == '__main__':
     app.run(debug=True)
